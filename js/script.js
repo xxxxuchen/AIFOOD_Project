@@ -103,6 +103,118 @@ function checkFlexGap() {
 }
 checkFlexGap();
 
+const slider = function () {
+  let slides = document.querySelectorAll(".slide");
+  slides = Array.from(slides);
+  const btnLeft = document.querySelector(".slider__btn--left");
+  const btnRight = document.querySelector(".slider__btn--right");
+  const dotContainer = document.querySelector(".dots");
+
+  let curSlide = 3;
+  const maxSlide = slides.length;
+
+  // Functions
+  const createDots = function () {
+    slides.forEach(function (_, i) {
+      dotContainer.insertAdjacentHTML(
+        "beforeend",
+        `<button class="dots__dot" data-slide="${i}"></button>`
+      );
+    });
+  };
+
+  const activateDot = function (slide) {
+    document
+      .querySelectorAll(".dots__dot")
+      .forEach((dot) => dot.classList.remove("dots__dot--active"));
+    document
+      .querySelector(`.dots__dot[data-slide="${slide}"]`)
+      .classList.add("dots__dot--active");
+  };
+
+  const initSlides = function () {
+    slides.slice(0, maxSlide - 1).forEach((s, i) => {
+      s.style.transform = `translateX(${100 * i}%)`;
+    });
+
+    slides[maxSlide - 1].style.transform = "translateX(-100%)";
+  };
+
+  const slidesMove = function (startSlide, temp) {
+    for (let i = 0; i < maxSlide - 1; i++) {
+      slides[startSlide].style.transition = "transform 0.5s";
+      slides[startSlide].style.transform = `translateX(${(temp += 100)}%)`;
+      startSlide = (startSlide + 1) % maxSlide;
+    }
+  };
+
+  const next = function () {
+    curSlide = (curSlide + 1) % maxSlide;
+    let startSlide = curSlide;
+    console.log(curSlide);
+    let temp = -200;
+    const preSlide = (curSlide - 1 + maxSlide) % maxSlide;
+    slides[preSlide].style.transition = "none";
+    slides[preSlide].style.transform = `translateX(${100 * (maxSlide - 2)}%)`;
+    slidesMove(startSlide, temp);
+    activateDot((curSlide + 1) % maxSlide);
+  };
+
+  const back = function () {
+    let startSlide = curSlide;
+    curSlide = (curSlide - 1 + maxSlide) % maxSlide;
+
+    console.log(curSlide);
+    const afterSlide = curSlide;
+    slides[afterSlide].style.transition = "none";
+    slides[afterSlide].style.transform = "translateX(-100%)";
+    let temp = -100;
+    slidesMove(startSlide, temp);
+    activateDot((curSlide + 1) % maxSlide);
+  };
+
+  const init = function () {
+    createDots();
+    initSlides();
+
+    activateDot(0);
+  };
+  init();
+
+  // Event handlers
+  btnRight.addEventListener("click", function () {
+    next();
+  });
+  btnLeft.addEventListener("click", back);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowLeft") prevSlide();
+    e.key === "ArrowRight" && nextSlide();
+  });
+
+  const dotJump = function (func, index) {
+    setTimeout(() => {
+      func();
+    }, 180 * index);
+  };
+
+  dotContainer.addEventListener("click", function (e) {
+    if (e.target.classList.contains("dots__dot")) {
+      const dotIndex = e.target.dataset.slide;
+      const moveTimes = dotIndex - ((curSlide + 1) % maxSlide);
+      for (let i = 0; i < Math.abs(moveTimes); i++) {
+        if (moveTimes > 0) {
+          dotJump(next, i);
+        }
+        if (moveTimes < 0) {
+          dotJump(back, i);
+        }
+      }
+    }
+  });
+};
+slider();
+
 // https://unpkg.com/smoothscroll-polyfill@0.4.4/dist/smoothscroll.min.js
 
 /*
